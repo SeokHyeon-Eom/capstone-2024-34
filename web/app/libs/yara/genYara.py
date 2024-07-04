@@ -95,6 +95,10 @@ def genYaraRule(input_list, output, signatures_len):
     for j in input_list:
         if j == "":
             continue
+        if len(j) > 200:
+            continue
+        if cnt >= 9999:
+            break
         tmpStr = j.replace('\\', '\\\\')
         tmpStr = tmpStr.replace('\"', '\\\"')
         cnt += 1
@@ -152,13 +156,11 @@ if __name__ == "__main__":
     K = 64
     M = 2 ** 14
     thetaJ = 0.6
-    window_size = 4
     vector_size = 512
     eps = 0.4
     minpts = 5
-    ngram = 4
-    hh1_size = 3000
-    hh2_size = 3000
+    hh1_size = 15000
+    hh2_size = 15000
     ratio = 0.4
     signatures = main(str_feature, K=K, M=M, thetaJ=thetaJ, vector_size=vector_size,
                       eps=eps, minpts=minpts, hh1_size=hh1_size, hh2_size=hh2_size, ratio=ratio)

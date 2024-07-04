@@ -30,4 +30,6 @@ export interface ApplyYaraPythonAPIFileItem {
   id: number;
   filename: string;
   match: boolean;
+  sig: Array<string>;
+  len: number
 }

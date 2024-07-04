@@ -24,6 +24,7 @@ def detect(file_folder_path, yar_file_path):
 
     exe_file_list = os.listdir(file_folder_path)
     exe_file_list = [x for x in exe_file_list]
+    exe_file_list.remove('upload_yara_rule.yar')
     file_folder_path = file_folder_path.rstrip('/')
 
     # 다중 yar 파일을 사용할 경우
@@ -40,12 +41,14 @@ def detect(file_folder_path, yar_file_path):
 
     rules = yara.compile(filepath=yar_file_path)
     for i, filename in enumerate(exe_file_list):
-        match_data = ''
+        res = []
         strings = extract_string(f'{file_folder_path}/{filename}')
+        length = len(strings)
         for string in strings:
             if string not in whitelist:
-                match_data += string
-        res = rules.match(data=match_data)
+                check = rules.match(data=string)
+                if check != []:
+                    res.append(string)
         tmp = {
             "id": i,
             "filename": filename
@@ -54,6 +57,8 @@ def detect(file_folder_path, yar_file_path):
             tmp["match"] = False
         else:
             tmp['match'] = True
+        tmp['sig'] = res
+        tmp['len'] = length
 
         ret["data"].append(tmp)
 

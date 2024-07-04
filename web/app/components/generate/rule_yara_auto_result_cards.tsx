@@ -68,24 +68,21 @@ const AutoGenYaraRuleResultCard = ({
         <>
           {success === true ? (
             <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
-              <div className="max-w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-3">
                 <div className="border-b border-gray-200 px-4 py-4">
                   <h2 className="text-lg font-semibold text-gray-800">
                     추출 시그니처
                   </h2>
                 </div>
-                <div className="inline-flex flex-wrap gap-2 p-4">
+                <div className="inline-flex flex-wrap gap-1 p-4 max-h-96 overflow-auto max-w-full">
                   {data_yara?.extractSignature.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="inline-flex items-center gap-x-1.5 rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-medium text-blue-800"
-                    >
-                      {item}
-                    </div>
+                      <p key={idx} className="inline-flex items-center gap-x-1.5 rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-medium text-blue-800">
+                        {item}
+                      </p>
                   ))}
                 </div>
               </div>
-              <div className="max-w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
+              <div className="max-w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-3">
                 <div className="flex border-b border-gray-200 px-4 py-4">
                   <h2 className="flex-1 text-lg font-semibold text-gray-800">
                     자동 생성 탐지 Yara Rule
@@ -103,7 +100,7 @@ const AutoGenYaraRuleResultCard = ({
                   </button>
                 </div>
                 <MonacoEditor
-                  className="my-4 w-full"
+                  // className="my-4 w-full"
                   height="600"
                   value={data_yara?.rule}
                   language="yara"

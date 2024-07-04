@@ -24,7 +24,7 @@ const FilesPEUploadCard = ({
   // 분석 api 호출결과 데이터 저장
   const [data, setData] = useState<GenYaraRulePeFilesUploadResponse>();
   // 파일 업로드 개수 제한
-  const maxFileCount = 1000;
+  const maxFileCount = 100000;
   // 세션 정보
   const { data: session } = useSession();
 
