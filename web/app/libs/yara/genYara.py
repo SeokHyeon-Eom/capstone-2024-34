@@ -93,12 +93,6 @@ def genYaraRule(input_list, output, signatures_len):
 
     cnt = 0
     for j in input_list:
-        if j == "":
-            continue
-        if len(j) > 200:
-            continue
-        if cnt >= 9999:
-            break
         tmpStr = j.replace('\\', '\\\\')
         tmpStr = tmpStr.replace('\"', '\\\"')
         cnt += 1
@@ -162,12 +156,25 @@ if __name__ == "__main__":
     hh1_size = 15000
     hh2_size = 15000
     ratio = 0.4
-    signatures = main(str_feature, K=K, M=M, thetaJ=thetaJ, vector_size=vector_size,
-                      eps=eps, minpts=minpts, hh1_size=hh1_size, hh2_size=hh2_size, ratio=ratio)
+    sig_nomi = main(str_feature, K=K, M=M, thetaJ=thetaJ, vector_size=vector_size, eps=eps, minpts=minpts, hh1_size=hh1_size, hh2_size=hh2_size, ratio=ratio)
+    
+    signatures = set()
+
+    for i in sig_nomi:
+        if i == '':
+            continue
+        if len(i) > 200:
+            continue
+        if len(signatures) >= 9999:
+            break
+        signatures.add(i)
+
+    signatures = list(signatures)
+    signatures.sort(key=lambda x: len(x))
 
     # make yara rule
     signatures_len = 1
-    yara_rule = genYaraRule(signatures, "test1", signatures_len)
+    yara_rule = genYaraRule(signatures, "sig_rule", signatures_len)
 
     f = open(f'{file_path}/my_yara_rule.yar', 'w')
     f.write(yara_rule)

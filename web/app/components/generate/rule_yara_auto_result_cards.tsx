@@ -71,12 +71,12 @@ const AutoGenYaraRuleResultCard = ({
               <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-3">
                 <div className="border-b border-gray-200 px-4 py-4">
                   <h2 className="text-lg font-semibold text-gray-800">
-                    추출 시그니처
+                    추출 시그니처: {data_yara?.extractSignature.length}개
                   </h2>
                 </div>
                 <div className="inline-flex flex-wrap gap-1 p-4 max-h-96 overflow-auto max-w-full">
                   {data_yara?.extractSignature.map((item, idx) => (
-                      <p key={idx} className="inline-flex items-center gap-x-1.5 rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-medium text-blue-800">
+                      <p key={idx} className="inline-flex items-center gap-x-1.5 rounded-lg bg-neutral-100 px-3 py-1.5 text-m font-medium text-blue-800">
                         {item}
                       </p>
                   ))}
