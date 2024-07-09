@@ -1,7 +1,13 @@
 import { GenYaraRulePeFilesUploadResponse } from "@customTypes/generate/api";
 import { YaraTokenizerConf } from "@customTypes/yara/monaco_editor";
 import dynamic from "next/dynamic";
+import { useState } from "react";
+import { Modal, Table, TableColumnsType } from "antd";
+import WordCloud from "@components/dashboard/wordcloud";
 import { monaco } from "react-monaco-editor";
+import {
+  FileSigResultTable,
+} from "@customTypes/apply/sig";
 
 const MonacoEditor = dynamic(() => import("react-monaco-editor"), {
   ssr: false,
@@ -14,6 +20,64 @@ const AutoGenYaraRuleResultCard = ({
   data_yara,
   isProgress,
 }: GenYaraRulePeFilesUploadResponse & { isProgress: boolean }) => {
+  const [fileIdx, setFileIdx] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [headerIdx, setHeaderIdx] = useState(0);
+
+  const showModal = (headerDataIdx: number) => {
+    setHeaderIdx(headerDataIdx);
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+  const columns: TableColumnsType<FileSigResultTable> = [
+    {
+      title: "번호",
+      dataIndex: "idx",
+      key: "idx",
+      width: "10%",
+    },
+    {
+      title: "파일",
+      dataIndex: "key",
+      key: "key",
+      width: "80%",
+    },
+  ];
+
+  const genModalTitle = (headerTypeNum: number) => {
+    if(data_yara != undefined)
+    {
+      const leng = data_yara?.cluster_file[headerTypeNum] !== undefined ? data_yara?.cluster_file[headerTypeNum].length : 0
+      return `파일 개수: ${leng}`
+    }
+  };
+  const genModalContent = (headerTypeNum: number) => {
+    let dataSource: FileSigResultTable[] = [];
+    
+    if(data_yara?.cluster_file != undefined)
+    {
+      if(data_yara?.cluster_file.length === 0)
+          return
+      for(let i = 0; i < data_yara?.cluster_file[headerTypeNum].length; i++)
+      {
+        const tmp: FileSigResultTable = {
+          idx: i + 1,
+          key: data_yara?.cluster_file[headerTypeNum][i]
+        };
+        dataSource.push(tmp);
+      }
+      return <Table dataSource={dataSource} columns={columns} />;
+    }
+    else
+      return;
+  };
+
+
+  const [clusterPage, setClusterPage] = useState<boolean>(false);
+
   const handleDownload = (ruleString: string) => {
     // 입력된 텍스트를 Blob 객체로 변환
     const blob = new Blob([ruleString], { type: "text/plain" });
@@ -66,12 +130,109 @@ const AutoGenYaraRuleResultCard = ({
         </div>
       ) : (
         <>
-          {success === true ? (
+          {success === true ? ( 
+            clusterPage === false ?
+            <div className="mt-5 grid h-full w-full max-w-full gap-4 rounded-xl sm:gap-6 xl:min-h-80 xl:grid-cols-3">
+              <div className="flex h-full max-w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm col-span-1">
+                <div className="border-b border-gray-200 px-4 py-4">
+                  <h2 className="text-lg font-semibold text-gray-800">Cluster 선택</h2>
+                  <p className="text-sm font-semibold text-blue-800">(시그니처추출의 실패할 수 있음)</p>
+                </div>
+                <div className="h-full w-full">
+                <div
+                    id="basic-tabs-1"
+                    className="h-full px-4"
+                    role="tabpanel"
+                    aria-labelledby="basic-tabs-item-1"
+                  >
+                  {data_yara?.cluster_file.length == 0 ? <div>시그니처 추출 실패</div>:data_yara?.cluster_file.map((_, idx) => (
+                    <div
+                      key={`li_${idx}`}
+                      className="gap-x-2 border-b border-gray-200 bg-white px-1 py-3 text-m font-medium text-neutral-800 first:border-t-0 last:border-b-0"
+                    >
+                      <div className="relative flex h-full w-full items-center">
+                        <div className="flex" onClick={() =>(setFileIdx(idx))}>
+                        <input
+                            id={`hs-list-group-item-radio-${idx}`}
+                            name="hs-list-group-item-radio"
+                            type="radio"
+                            className="rounded-full border-gray-200 disabled:opacity-50"
+                          />
+                        
+                        </div>
+                        <label
+                          htmlFor={`hs-list-group-item-radio-${idx}`}
+                          className="ms-3 block w-full text-m text-gray-600"
+                        >
+                        <div>{idx}: Cluster</div>
+                      </label>
+                    </div>  
+                  </div>
+                    ))
+                  }  
+                  </div>
+                </div>
+              </div>
+              <div className="flex h-full max-w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm col-span-2" >
+                <div className="border-b border-gray-200 px-4 py-4">
+                  <h2 className="text-lg font-semibold text-gray-800 cursor-pointer" onClick={data_yara?.cluster_file.length == 0 ? () => {}:() => showModal(fileIdx)}> 
+                    {data_yara?.cluster_file.length == 0 ? '시그니처 추출에 실패했습니다' : `${data_yara?.cluster_file[fileIdx].length}개의 파일` }
+                    <p className="text-sm font-semibold text-blue-800">(클릭 시 클러스터 안의 파일 확인 가능)</p>
+                  </h2>
+                </div>
+                <div>
+                  {data_yara?.cluster_sig.length === 0 ? '시그니처 추출 실패' : 
+                  <div className="gap-1 px-4 py-2">
+                    <p className="text-sm font-semibold text-black-800">(시그니처 일부)</p>
+                    <div className="inline-flex flex-wrap gap-1 max-h-96 overflow-auto max-w-full">
+                      {data_yara?.cluster_sig[fileIdx].map((item, idx) => (
+                      <p key={idx} className="inline-flex items-center gap-x-1.5 rounded-lg bg-neutral-100 px-3 py-1.5 text-m font-medium text-blue-800">
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                  </div>}
+                </div>
+              </div>
+              <Modal
+                title={genModalTitle(headerIdx)}
+                open={isModalOpen}
+                onCancel={handleCancel}
+                footer={null}
+                width={800}
+              >
+                <div className="text-lg">
+                  <div>{genModalContent(headerIdx)}</div>
+                </div>
+              </Modal>
+              <button
+                type="button"
+                className="inline-flex items-center gap-x-1 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50 w-20 h-10" 
+                onClick={() => setClusterPage(true)}
+              >
+                다음
+                <svg
+                  className="size-4 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </button>
+            </div>   
+             : 
             <div className="grid w-full max-w-full gap-4 sm:gap-6 lg:grid-cols-3">
-              <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-3">
+              {/* <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-3">
                 <div className="border-b border-gray-200 px-4 py-4">
                   <h2 className="text-lg font-semibold text-gray-800">
-                    추출 시그니처: {data_yara?.extractSignature.length}개
+                    Yara Rule 생성 시그니처: {data_yara?.extractSignature.length}개
                   </h2>
                 </div>
                 <div className="inline-flex flex-wrap gap-1 p-4 max-h-96 overflow-auto max-w-full">
@@ -81,11 +242,11 @@ const AutoGenYaraRuleResultCard = ({
                       </p>
                   ))}
                 </div>
-              </div>
+              </div> */}
               <div className="max-w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-3">
                 <div className="flex border-b border-gray-200 px-4 py-4">
                   <h2 className="flex-1 text-lg font-semibold text-gray-800">
-                    자동 생성 탐지 Yara Rule
+                    자동 생성 탐지 Yara Rule <p className="text-sm font-semibold text-blue-800">(총 시그니처개수: {data_yara?.extractSignature.length}개)</p>
                   </h2>
                 </div>
                 <div className="flex w-full justify-end bg-neutral-50 px-4 py-2">
@@ -100,7 +261,6 @@ const AutoGenYaraRuleResultCard = ({
                   </button>
                 </div>
                 <MonacoEditor
-                  // className="my-4 w-full"
                   height="600"
                   value={data_yara?.rule}
                   language="yara"
@@ -119,8 +279,31 @@ const AutoGenYaraRuleResultCard = ({
                   }}
                 />
               </div>
+              <button
+                type="button"
+                className="inline-flex items-center gap-x-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 w-20 h-10"
+                onClick={() => setClusterPage(false)}
+              >
+                <svg
+                  className="size-4 flex-shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m15 18-6-6 6-6"></path>
+                </svg>
+                이전
+              </button>
             </div>
-          ) : (
+          )
+          
+          : (
             <></>
           )}
         </>

@@ -33,4 +33,6 @@ export interface FileName {
 export interface GenAutoYaraAPIResponse {
   rule: string;
   extractSignature: string[];
+  cluster_file: string[][];
+  cluster_sig: string[][];
 }

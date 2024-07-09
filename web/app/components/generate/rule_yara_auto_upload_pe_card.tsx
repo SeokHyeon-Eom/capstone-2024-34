@@ -200,7 +200,7 @@ const FilesPEUploadCard = ({
               {files.length != 0 ? (
                 <div className="mt-2 w-full">
                   <p className="ml-1">
-                    <span className="text-blue-600">{files.length}개</span>
+                    <span className="text-blue-600 text-xl">총 {files.length}개 파일</span>
                   </p>
                   <div className="mt-1 flex max-h-72 w-full flex-col items-center space-y-2 overflow-y-scroll">
                     {files.map((file: File, idx: any) => (

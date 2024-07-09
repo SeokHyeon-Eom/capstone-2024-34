@@ -49,7 +49,7 @@ const ApplyRuleYaraResultCard = ({
   const genModalTitle = (headerTypeNum: number) => {
     if(matchedFiles != undefined)
     {
-      const leng = matchedFiles[headerTypeNum].sig.length
+      const leng = matchedFiles[headerTypeNum] !== undefined ? matchedFiles[headerTypeNum].sig.length : 0
       return `시그니처의 총 개수: ${leng}`
     }
   };
@@ -57,7 +57,7 @@ const ApplyRuleYaraResultCard = ({
   const genModalContent = (headerTypeNum: number) => {
     let dataSource: FileSigResultTable[] = [];
     
-    if(matchedFiles != undefined)
+    if(matchedFiles != undefined && matchedFiles[headerTypeNum] !== undefined)
     {
       const signatures = matchedFiles[headerTypeNum].sig
       for(let i = 0; i < signatures.length; i++)
@@ -68,8 +68,10 @@ const ApplyRuleYaraResultCard = ({
         };
         dataSource.push(tmp);
       }
+      return <Table dataSource={dataSource} columns={columns} />;
     }
-    return <Table dataSource={dataSource} columns={columns} />;
+    else
+      return;
   };
 
   const totalFiles = data_apply_yara?.output.data.length;

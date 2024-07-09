@@ -8,7 +8,6 @@ from core.HH import HH
 def SG2(payloads, vector_size, eps, minpts, hh1_size, hh2_size, ratio):
     fine_vectors = []
 
-    # print('chunking')
     for payload in payloads:
         chunks = payload  # AEchunking(payload, window_size)
         vector = np.zeros(vector_size, dtype=np.int8)
@@ -19,10 +18,8 @@ def SG2(payloads, vector_size, eps, minpts, hh1_size, hh2_size, ratio):
 
         fine_vectors.append(vector)
 
-    # print('start DBSCAN')
     model = DBSCAN(eps=1-eps, min_samples=minpts, metric='cosine', n_jobs=8)
     model.fit(fine_vectors)
-    # print('end DBSCAN')
 
     cluster_labels = model.labels_
 
@@ -35,7 +32,6 @@ def SG2(payloads, vector_size, eps, minpts, hh1_size, hh2_size, ratio):
             cluster_dict[label] = []
         cluster_dict[label].append(payload)
 
-    # print('make signature')
     cluster_signature = dict()
     for cluster_label in cluster_dict.keys():
         payloads = cluster_dict[cluster_label]
@@ -49,6 +45,5 @@ def SG2(payloads, vector_size, eps, minpts, hh1_size, hh2_size, ratio):
         )
 
         cluster_signature[cluster_label] = signatures
-    # print('end signature')
 
-    return cluster_signature
+    return cluster_signature, cluster_labels
