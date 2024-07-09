@@ -61,11 +61,13 @@ def main(str_feature,
 	big_group_indices = JIG(vectors=minhashed_virtual_vectors, thetaJ=thetaJ)
 
 	big_group_payloads = []
+	big_group_idx = []
 	non_big_group_paylaods = []
 
 	for idx, payload in enumerate(str_feature):
 		if idx in big_group_indices:
 			big_group_payloads.append(payload)
+			big_group_idx.append(idx)
 		else:
 			non_big_group_paylaods.append(payload)
 
@@ -73,7 +75,7 @@ def main(str_feature,
 	cluster_signatures, cluster_lables = SG2(payloads=big_group_payloads, vector_size=vector_size,
 							 eps=eps, minpts=minpts, hh1_size=hh1_size, hh2_size=hh2_size, ratio=ratio)
 
-	return cluster_signatures, cluster_lables
+	return cluster_signatures, [list(cluster_lables), big_group_idx]
 
 
 # make yara rule contents strings
@@ -150,13 +152,16 @@ if __name__ == "__main__":
 	hh2_size = 15000
 	ratio = 0.4
 	
-	cluster_signatures, cluster_labels = main(str_feature, K=K, M=M, thetaJ=thetaJ, vector_size=vector_size, 
+	cluster_signatures, cluster_labels_idx = main(str_feature, K=K, M=M, thetaJ=thetaJ, vector_size=vector_size, 
 										   eps=eps, minpts=minpts, hh1_size=hh1_size, hh2_size=hh2_size, ratio=ratio)
 
 	file_direc = os.listdir(file_path)
 
+	cluster_labels = cluster_labels_idx[0]
+	cluster_indices = cluster_labels_idx[1]
+
 	cluster_file = dict()
-	for idx, label in enumerate(cluster_labels):
+	for label, idx in zip(cluster_labels, cluster_indices):
 		if label == -1:
 			continue
 		if label not in cluster_file:
